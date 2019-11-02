@@ -3,4 +3,5 @@
     <string name="foodLocationText">Restaurant address: </string>
     <string name="userLocationText">Delivery address:   </string>
     <string name="buttonText">Go!</string>
+    <string name="google_maps_key">AIzaSyBEXHwGH2vJ2urprU3TDFxvF4O245kPi-U</string>
 </resources>

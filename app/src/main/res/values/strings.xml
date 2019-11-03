@@ -1,7 +1,7 @@
 <resources>
-    <string name="app_name">MunchTheCrunchALPHA</string>
+    <string name="app_name">Crunch the Munch</string>
     <string name="foodLocationText">Restaurant address: </string>
     <string name="userLocationText">Delivery address:   </string>
-    <string name="buttonText">Go!</string>
-    <string name="google_maps_key">AIzaSyBEXHwGH2vJ2urprU3TDFxvF4O245kPi-U</string>
+    <string name="buttonText">Crunch!</string>
+    <string name="google_maps_key">AIzaSyDAu0aufcJjUG7Yrc8toRjtLphnuiazDfc</string>
 </resources>

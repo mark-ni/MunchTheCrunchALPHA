@@ -8,10 +8,15 @@ import androidx.fragment.app.FragmentActivity;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.Security;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Calendar;
+import java.util.Date;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -21,7 +26,6 @@ import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -30,8 +34,6 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.places.GeoDataClient;
-import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -46,9 +48,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private GoogleMap mMap;
 
-    protected AutoCompleteTextView userLocationEditText;
-    protected AutoCompleteTextView foodLocationEditText;
-    protected Button goButton;
+    protected EditText userLocationEditText;
+    protected EditText foodLocationEditText;
+    protected Button foodButton;
+    protected Button userButton;
 
     protected String userLocation;
     protected String foodLocation;
@@ -61,10 +64,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private Boolean mLocationPermissionsGranted = false;
     private FusedLocationProviderClient mFusedLocationProviderClient;
-
-    private PlaceAutocompleteAdapter mPlaceAutocompleteAdapter;
-    private GoogleApiClient mGoogleApiClient;
-    private GeoDataClient mGeoDataClient;
+    private Date date;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,15 +77,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         userLocationEditText = findViewById(R.id.userLocationEditText);
         foodLocationEditText = findViewById(R.id.foodLocationEditText);
-        goButton = findViewById(R.id.button);
 
-        goButton.setOnClickListener(new View.OnClickListener() {
+        foodButton = findViewById(R.id.button);
+        userButton = findViewById(R.id.buttonUser);
+
+        foodButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                foodLocation = foodLocationEditText.getText().toString();
+                geoLocate(foodLocation);
+                if (!userButton.getText().toString().isEmpty()) {
+                    go(userLocation, foodLocation);
+                }
+            }
+        });
+
+        userButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 userLocation = userLocationEditText.getText().toString();
-                foodLocation = foodLocationEditText.getText().toString();
-                geoLocate();
-                //go(userLocation, foodLocation);
+                geoLocate(userLocation);
+                if (!foodButton.getText().toString().isEmpty()) {
+                    go(userLocation, foodLocation);
+                }
             }
         });
 
@@ -97,14 +111,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-    private void geoLocate() {
+    private void geoLocate(String location) {
 
         Geocoder geocoder = new Geocoder(MapsActivity.this);
         List<Address> list = new ArrayList<>();
 
         try {
             Log.d("MunchTheCrunchALPHA", "looking for a place");
-            list = geocoder.getFromLocationName(userLocation, 1);
+            list = geocoder.getFromLocationName(location, 1);
         }
         catch (IOException e){
             Log.d("MunchTheCrunchALPHA","you failed." + e.getMessage());
@@ -194,41 +208,57 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(MapsActivity.this);
     }
 
-//    protected void go(String theUserLocation, String theFoodLocation) {
-//        //TODO: get the time
-//        int time = 600;
-//
-//        //TODO: change the text file
-//        File file = new File("textfile.txt");
-//
-//        Scanner scan = null;
-//
-//        try {
-//            scan = new Scanner(file);
-//            double best = 1000000.0;
-//            String company;
-//            while (scan.hasNextLine()) {
-//                String s = scan.nextLine();
-//                String[] temp = s.split(":", 0);
-//                if (temp[0].equals(theUserLocation) && temp[1].equals(theFoodLocation) && time > Integer.parseInt(temp[2]) - 30
-//                && time < Integer.parseInt(temp[2]) + 30 && best > Double.parseDouble(temp[4])) {
-//                    best = Double.parseDouble(temp[4]);
-//                    company = temp[3];
-//                }
-//            }
-//
-//            //TODO: Display the best price and company to the user
-//            Toast toast = Toast.makeText(getApplicationContext(), userLocation + ", " + foodLocation,Toast.LENGTH_LONG);
-//            toast.show();
-//        }
-//        catch (FileNotFoundException e) {
-//            Log.d("MunchTheCrunchALPHA", "frick");
-//        }
-//        finally {
-//            if (scan != null) {
-//                scan.close();
-//            }
-//        }
+    protected void go(String theUserLocation, String theFoodLocation) {
+        int time = Calendar.HOUR_OF_DAY*60 + Calendar.MINUTE;
+
+        InputStream file;
+        Scanner scan = null;
+
+        try {
+            file = getAssets().open("database.txt");
+            scan = new Scanner(file);
+            double best = 1000000.0;
+            String company = "";
+
+            while (scan.hasNextLine()) {
+                String s = scan.nextLine();
+                String[] temp = s.split(":", 0);
+                Log.d("MunchTheCrunchALPHA", temp[0] + "," + temp[1]);
+
+                if (temp[0].equals(theUserLocation)) {
+                    Log.d("MunchTheCrunchALPHA", "1");
+                    if (temp[1].equals(theFoodLocation)) {
+                        Log.d("MunchTheCrunchALPHA", "2");
+
+                        if (time > Integer.parseInt(temp[2]) - 300) {
+                            Log.d("MunchTheCrunchALPHA", "3");
+
+                            if (time < Integer.parseInt(temp[2]) + 300) {
+                                Log.d("MunchTheCrunchALPHA", "4");
+
+                                if (best > Double.parseDouble(temp[3])) {
+                                    Log.d("MunchTheCrunchALPHA", "hit!");
+                                    best = Double.parseDouble(temp[3]);
+                                    company = temp[4];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            //TODO: Display the best price and company to the user
+            Toast toast = Toast.makeText(getApplicationContext(), company + String.format(": $.2d",best), Toast.LENGTH_LONG);
+            toast.show();
+            Log.d("MunchTheCrunchALPHA", "Success!");
+        } catch (IOException e) {
+            Log.d("MunchTheCrunchALPHA", "frick");
+        } finally {
+            if (scan != null) {
+                scan.close();
+            }
+        }
+    }
 
     /**
      * Manipulates the map once available.
@@ -243,20 +273,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        mGeoDataClient = Places.getGeoDataClient(this);
-
-//         mGoogleApiClient = new GoogleApiClient
-//                .Builder(this)
-//                .addApi(Places.GEO_DATA_API)
-//                .addApi(Places.PLACE_DETECTION_API)
-//                .enableAutoManage(this, this)
-//                .build();
-
-
-        mPlaceAutocompleteAdapter = new PlaceAutocompleteAdapter(this, mGeoDataClient, LAT_LNG_BOUNDS, null);
-
-        userLocationEditText.setAdapter(mPlaceAutocompleteAdapter);
-        foodLocationEditText.setAdapter(mPlaceAutocompleteAdapter);
+        //userLocationEditText.setAdapter(mPlaceAutocompleteAdapter);
+        //foodLocationEditText.setAdapter(mPlaceAutocompleteAdapter);
 
         if (mLocationPermissionsGranted) {
             getDeviceLocation();

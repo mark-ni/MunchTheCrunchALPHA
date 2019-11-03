@@ -3,5 +3,6 @@
     <string name="foodLocationText">Restaurant address: </string>
     <string name="userLocationText">Delivery address:   </string>
     <string name="buttonText">Crunch!</string>
+    <string name="buttonText2">Munch!</string>
     <string name="google_maps_key">AIzaSyDAu0aufcJjUG7Yrc8toRjtLphnuiazDfc</string>
 </resources>

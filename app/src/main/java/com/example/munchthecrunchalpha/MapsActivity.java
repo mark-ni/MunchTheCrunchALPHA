@@ -248,7 +248,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
 
             //TODO: Display the best price and company to the user
-            Toast toast = Toast.makeText(getApplicationContext(), company + String.format(": $.2d",best), Toast.LENGTH_LONG);
+            Toast toast = Toast.makeText(getApplicationContext(), company + ": $" + best, Toast.LENGTH_LONG);
             toast.show();
             Log.d("MunchTheCrunchALPHA", "Success!");
         } catch (IOException e) {
